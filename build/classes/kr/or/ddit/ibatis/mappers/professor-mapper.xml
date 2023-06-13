@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="pro">
+<!-- vo = provo  -->
+
+
+	<!--  select All  -->
+	<select id="getAllprofesser" resultClass="provo">
+		select * from professor order by PRO_ID desc
+	</select>
+	
+	<select id="professerone" parameterClass="String" resultClass="provo">
+		select * from professor where pro_id = #pro_id#
+	</select>
+	
+	<!-- 교수,아이디,비번 비교 -->
+	<select id ="getProfessor" resultClass="provo" parameterClass="provo">
+    	select * from professor
+    	where pro_id=#pro_id# and pro_pw=#pro_pw#
+    </select>
+	
+	
+	
+		<!-- 아이디 비밀번호 찾기 쿼리문 -->
+	<select id="findId" parameterClass="provo" resultClass="provo">
+		select * from professor where pro_nm=#pro_nm# and pro_reg=#pro_reg#
+	
+	</select>
+	
+<!-- 	 비밀번호 초기화 쿼리문 -->
+	<select id="subreg" parameterClass="provo" resultClass="String">
+		select substr(pro_reg,1,6) from professor where pro_id=#pro_id#
+	</select>
+	
+	<update id="resetpw" parameterClass="provo">
+		update professor set pro_pw = #pro_pw# where pro_id=#pro_id#
+	</update>
+	
+	
+		<!-- 교수 프로필 업데이트 -->
+	<update id="updatepro" parameterClass="provo">
+		update professor 
+			set pro_addr = #pro_addr#,
+				pro_zip= #pro_zip#,
+				pro_mail= #pro_mail#,
+				pro_tel= #pro_tel#,
+				pro_poto= #pro_poto#
+		where pro_id = #pro_id#
+	</update>
+	<!-- 교수 정보 불러오기 -->
+	<select id="professorone" parameterClass="String" resultClass="provo">
+		select * from professor where pro_id = #pro_id#
+	</select>
+	
+	<!-- 교수 비밀번호 변경 -->
+	<update parameterClass="provo" id="modifyPw">
+		update professor set pro_pw = #pro_pw# where pro_id= #pro_id#
+	</update>
+	
+		<!-- 담당 학급 보기 -->
+	<select id="selectClass" parameterClass="String" resultClass="classvo">
+		select A.CLASS_NO, A.RM_NO, A.PRO_ID, A.TR_ID, B.TR_NM, A.S_DATE, A.E_DATE, A.CL_FIN
+        from class A, TRAINING B
+        where pro_id =#pro_id# AND A.TR_ID=B.TR_ID
+	</select>
+	
+	
+	<!-- 담당 학급 학생 목록 -->
+	<select id="selectClassStuList" parameterClass="String" resultClass="stuvo">
+		select * from student where class_no = #class_no#
+	</select>
+	
+	
+</sqlMap>

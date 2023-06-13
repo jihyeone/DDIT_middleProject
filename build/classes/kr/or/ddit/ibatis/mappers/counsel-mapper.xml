@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="counsel">
+<!-- vo = counselvo  -->
+
+
+	<!--  select All  모든 리스트-->
+	<select id="getCounselList" resultClass="counselvo">
+		select * from counsel order by REG_DATE desc
+	</select>
+	
+	<!-- 학생이 받은 것 -->
+	<select id="selectCounselList" parameterClass="String" resultClass="counselvo">
+		select * from counsel where stu_id = #data# order by REG_DATE desc
+	</select>
+	
+	<!-- 상담번호로 찾기 - 내용 -->
+	<select id="counselDetail" parameterClass="String" resultClass="counselvo">
+		select * from counsel where cns_no = #data#
+	</select>
+	
+	<!-- 새로운 상담신청 -->
+	<insert id="insertCounsel" parameterClass="counselvo">
+		insert into COUNSEL(CNS_NO, STU_ID, PRO_ID, CNS_TTL, CNS_CN, REG_DATE, CHECKYN) 
+		values(cns_seq.nextval, #stu_id#,#pro_id#, #cns_ttl#, #cns_cn#, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') , 'N' )
+	</insert>
+	
+	
+	<!-- 상담신청 삭제 -->
+	<delete id="deleteCounsel" parameterClass="String">
+		delete from counsel where CNS_NO = #data#
+	</delete>
+	
+	<!-- 학생이 받은 것 -->
+	
+	
+	<!-- 교수가 받은 상담 리스트 / 학생 이름 출력?...-->
+	<select id="getProCnsList" parameterClass="String" resultClass="counselvo">
+		select A.CNS_NO, B.STU_NM,  B.CLASS_NO, A.CNS_TTL, A.REG_DATE, A.CHECKYN  from COUNSEL A ,  STUDENT B
+		WHERE A.STU_ID = B.STU_ID AND A.PRO_ID = #data#
+		order by  REG_DATE desc
+	</select>
+	
+	<!-- 교수확인 update -->
+	<update id="updateCheck" parameterClass="String" >
+		update counsel set CHECKYN = 'Y' where CNS_NO = #data#
+	</update>
+	
+	
+	<!-- 교수가 받은 최신 상담 -->
+	<select id="selectRecentCns" parameterClass="String" resultClass="counselvo">
+		select * from(
+		select A.CNS_NO, A.STU_ID, B.STU_NM, B.CLASS_NO,  A.CNS_TTL, A.REG_DATE, A.CHECKYN  
+		from COUNSEL A ,  STUDENT B
+		WHERE A.STU_ID = B.STU_ID AND A.PRO_ID = #data#
+		order by  REG_DATE desc)
+		where rownum = 1
+	</select>
+	
+	<!-- 승인하지 않은 상담 내역 갯수 -->
+	<select id="countCnsCheckN" parameterClass="String" resultClass="int">
+		select count(CHECKYN) from COUNSEL
+         where PRO_ID = #data# AND CHECKYN='N'
+	</select>
+	
+	
+	<!-- 교수가 받은 최근 상담 4개 -->
+	<select id="recentCnsList" parameterClass="String" resultClass="counselvo">
+		select * from(
+        select  B.STU_NM, A.CNS_TTL, A.REG_DATE, A.CHECKYN
+        from COUNSEL A, STUDENT B
+        where PRO_ID = #data# and A.STU_ID=B.STU_ID
+        order by REG_DATE desc
+        ) where rownum  between 1 and 4
+	</select>
+	
+	
+	
+	<sql id="dynamicCondition">
+	   <dynamic prepend=" and ">
+	       <isNotEmpty property="stype"  prepend=" and ">
+	          <isNotEmpty property="sword">
+	                  $stype$  like '%'||#sword#||'%'
+	          </isNotEmpty>
+	       </isNotEmpty>
+	   </dynamic>
+	</sql>
+	
+	
+	<!-- 상담 bypage -->
+	<select id="CnsListbypage" parameterClass="map" resultClass="counselvo">
+	           select A.* from 
+     		(select rownum as rnum , B.* from
+      		  (select A.CNS_NO, B.STU_NM,  B.CLASS_NO, A.CNS_TTL, A.REG_DATE, A.CHECKYN  from COUNSEL A ,  STUDENT B
+        		WHERE A.STU_ID = B.STU_ID AND A.PRO_ID =#pro_id#
+        			<include refid="dynamicCondition"/>
+             	  order by REG_DATE  desc ) B 
+             	  
+       <![CDATA[
+         	 where rownum <= #end#) A
+    	   where A.rnum >= #start# 
+   	  ]]> 
+	</select>
+	
+		<!-- 교수가 받은 상담 글 갯수 -->
+	<select id="totalCount" resultClass="int" parameterClass="map">
+       		select count(*) from COUNSEL
+            where PRO_ID=#pro_id#
+         	 	
+	</select>
+	
+	
+	
+	
+	
+	
+	<!-- 학생이 보낸 상담 리스트 페이징 -->
+	<select id="StuCnsBypage" parameterClass="map" resultClass="counselvo">
+		select A.* from 
+		(select rownum as rnum , B.* from
+   		 (select * from counsel 
+			where stu_id = #stu_id#
+ 			<include refid="dynamicCondition"/>
+			 order by REG_DATE desc) B
+		 <![CDATA[	 
+            where rownum <= #end#) A 
+          where A.rnum >= #start# 
+            ]]> 
+	</select>
+	
+	
+	<!-- 학생이 보낸 상담글갯수 -->
+	<select id="StuCnsCount" resultClass="int" parameterClass="map">
+		select count(*) from counsel 
+		where stu_id = #stu_id#
+	</select>
+	
+</sqlMap>

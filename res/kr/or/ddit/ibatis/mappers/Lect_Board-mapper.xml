@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+	<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+		
+<sqlMap namespace="LBoard">
+<!-- vo = Lboardvo -->
+	
+	<!-- getAllLBList 전체 리스트 -->
+	<select id="getAllLBList" resultClass="Lboardvo">
+		select * from LECT_BOARD order by lboard_date desc
+	</select>
+	
+	<!-- 글 전체 갯수 -->
+	<select id="getLBoardCount" resultClass="int" parameterClass="map">
+		select count(*) from LECT_BOARD
+	</select>
+	
+	<!-- 조인 -->
+	<select id="joinlboard" resultClass="Lboardvo">
+		select A.LB_NM, B.LBOARD_NO, B.LBOARD_TTL, C.PRO_NM, B.LBOARD_DATE, B.LBOARD_RC 
+    	from LB_CODE A, LECT_BOARD B, PROFESSOR C
+    	where A.LB_GU = B.LB_GU 
+    	and B.PRO_ID = C.PRO_ID
+    	order by B.LBOARD_DATE desc
+	</select>
+	
+	<!-- getLBDetail 내용 -->
+	<select id="getLBDetail" parameterClass="String" resultClass="Lboardvo">
+		select * from LECT_BOARD
+		where LBOARD_NO = #data# 
+	</select>
+	
+	<!-- insertLBoard 글 등록 -->
+	<insert id="insertLBoard" parameterClass="Lboardvo">
+		insert into LECT_BOARD (LBOARD_NO, LBOARD_TTL, LBOARD_CN, LBOARD_DATE, LBOARD_RC, PRO_ID, LB_GU)
+		values(LBoardNo_seq.nextval, #lboard_ttl#, #lboard_cn#, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'), 0, #pro_id#, #lb_gu#)
+		<selectKey keyProperty="lboard_no" resultClass="String">
+			select LBoardNo_seq.currval from dual
+		</selectKey>
+	</insert>
+	
+	<!-- deleteLBoard 글 삭제 -->
+	<delete id="deleteLBoard" parameterClass="String">
+		delete from LECT_BOARD 
+		where lboard_no=#data#
+	</delete>
+	
+	<!-- updateLBoard 글 수정 -->
+	<update id="updateLBoard" parameterClass="Lboardvo">
+		update LECT_BOARD 
+		set lboard_ttl=#lboard_ttl#
+		  , lboard_cn=#lboard_cn#
+	   	  , lboard_date=TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS')
+		  , lb_gu=#lb_gu#
+		where lboard_no=#lboard_no#
+	</update>
+
+	<!-- updateLBoardRC 조회수 증가 -->
+	<update id="updateLBoardRC" parameterClass="String">
+		update LECT_BOARD 
+		set lboard_rc = lboard_rc + 1 
+		where lboard_no=#lboard_no#
+	</update>
+	
+		
+	<!-- 혜연 : 학생 메인페이지 강의게시판 최근 게시물 보기 -->
+	<select id="recentLBoardList" resultClass="Lboardvo">
+	   select * from(
+       select A.LBOARD_NO, A.LBOARD_TTL, B.PRO_NM, A.LBOARD_RC
+       from LECT_BOARD A, PROFESSOR B
+       where A.PRO_ID=B.PRO_ID
+       order by LBOARD_DATE desc
+       )  where rownum  between 1 and 4
+	</select>
+<!-- vo = LBcodevo -->
+
+	<!-- getAllCode 전체 코드 리스트 -->
+	<select id="getAllCode" resultClass="LBcodevo">
+		select * from LB_CODE
+	</select>
+	
+	<!-- joinLBCode 코드이름 -->
+	<select id="joinLBCode" resultClass="LBcodevo" parameterClass="String">
+		select lb_nm 
+		from LB_CODE
+		where lb_gu=(select lb_gu
+					   from LECT_BOARD
+					  where lboard_no=#data#)
+	</select>
+
+<!-- vo = LBattachvo  -->
+
+	<!-- insertFile 파일등록 -->
+	<insert id="insertLBfile" parameterClass="LBattachvo">
+		insert into LB_ATTACH ( lfile_no, lboard_no, reg_date, lfile_nm, lfile_path, lfile_size, lfile_type )
+		values (TO_CHAR(LB_FileNo_seq.nextval), #lboard_no#, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'), #lfile_nm#, #lfile_path#, #lfile_size#, #lfile_type# )
+	</insert>
+
+	<!-- selectAllLBfile 전체 파일리스트  -->
+	<select id="selectAllLBfile" resultClass="LBattachvo">
+		select * from LB_ATTACH
+	</select>
+
+	<!-- getFileNO 파일리스트(lfNo) -->
+	<select id="getlbFileNo" resultClass="LBattachvo" parameterClass="String">
+		select * from LB_ATTACH where lfile_no=#data#
+	</select>	
+	
+ 	<!-- getFileLBNo 파일리스트(lbNo) --> 
+ 	<select id="getFileLBNo" resultClass="LBattachvo" parameterClass="String">
+ 		select * from LB_ATTACH where lboard_no=#data#
+ 	</select>
+	
+ 	<!-- joinLBFile 파일이름 --> 
+ 	<select id="joinLBFile" resultClass="LBattachvo" parameterClass="String">
+ 		select lfile_nm
+ 		from LB_ATTACH
+ 		where lboard_no=(select lboard_no
+ 						 from LECT_BOARD
+ 						 where lfile_no=#data#)
+ 	</select>
+
+	<!-- deleteFile 파일삭제 -->
+	<delete id="deleteFile" parameterClass="String">
+		delete from LB_ATTACH 
+		where lboard_no=#data#
+	</delete>
+	
+	
+	<!--                페이징                 -->
+	
+	<sql id="dynamicCondition">
+	   <dynamic prepend=" and ">
+	       <isNotEmpty property="stype"  prepend=" and ">
+	          <isNotEmpty property="sword">
+	                  $stype$  like '%'||#sword#||'%'
+	          </isNotEmpty>
+	       </isNotEmpty>
+	   </dynamic>
+	</sql>
+	
+	<select id="LBListBypage" parameterClass="map" resultClass="Lboardvo">
+	select A.* from 
+   (select rownum as rnum , B.* from(
+       select A.LB_NM, B.LBOARD_NO, B.LBOARD_TTL, C.PRO_NM, B.LBOARD_DATE, B.LBOARD_RC 
+    	from LB_CODE A, LECT_BOARD B, PROFESSOR C
+    	where A.LB_GU = B.LB_GU 
+    	and B.PRO_ID = C.PRO_ID
+    		 <include refid="dynamicCondition"/>
+          <![CDATA[   
+         	  order by B.LBOARD_DATE desc  ) B 
+         	 where rownum <=  #end#) A 
+    	   where A.rnum >= #start# 
+    	     ]]> 
+	</select>
+	
+<!--         and LBOARD_TTL like '%업%' -->
+	
+	<!-- 페이징 전체 글종류 -->
+	<select id="LBtotalCount" resultClass="int" parameterClass="map">
+	   select count(*) from(              
+        select A.LB_NM, B.LBOARD_NO, B.LBOARD_TTL, C.PRO_NM, B.LBOARD_DATE, B.LBOARD_RC 
+    	from LB_CODE A, LECT_BOARD B, PROFESSOR C
+    	where A.LB_GU = B.LB_GU 
+    	and B.PRO_ID = C.PRO_ID      
+  			<include refid="dynamicCondition"/>
+        order by B.LBOARD_DATE desc )
+	
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</sqlMap>

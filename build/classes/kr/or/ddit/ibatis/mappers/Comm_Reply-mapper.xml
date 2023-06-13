@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="CReply">
+
+	<!-- vo = CBcommvo  -->
+	
+	<!-- 댓글등록 -->
+		<update id="insertReply" parameterClass="CBcommvo">
+			   
+   			insert into comm_comment (cmnt_no
+                           			 , stu_id
+                        		     , cmnt_date
+                          		     , cmnt_cn
+                                     , comm_no)
+		           	     	  values (comm_reply_num_seq.nextval  ,
+										#stu_id#  ,
+										to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss')  ,
+										#cmnt_cn#  ,
+										#comm_no#)
+		</update>
+	
+	
+	<!-- 댓글삭제 -->
+		<delete id="deleteReply" parameterClass="String">
+			delete from comm_comment where cmnt_no = #cmnt_no#
+		</delete>
+
+	<!-- 댓글수정 -->
+		<update id="modifyReply" parameterClass="CBcommvo">
+			 update comm_comment set cmnt_cn = #cmnt_cn#   ,
+								cmnt_date = to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss')
+		   	           where cmnt_no = #cmnt_no#
+		</update>
+	<!-- 댓글 리스트 -->
+		<select id="selectReply" parameterClass="String" resultClass="CBcommvo">
+			select a.cmnt_no, a.stu_id, a.cmnt_date, a.cmnt_cn, a.comm_no, b.stu_nm
+  			  from comm_comment a, student b
+ 			 where a.stu_id = b.stu_id 
+ 			   and comm_no=#comm_no#
+ 			   order by to_number(a.cmnt_no) desc
+		</select>
+
+
+</sqlMap>
+	

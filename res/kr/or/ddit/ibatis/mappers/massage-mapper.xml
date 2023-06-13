@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="massage">
+<!-- vo = mgsvo  -->
+
+
+	<!--  select All  -->
+	<select id="getAllMassage" resultClass="mgsvo">
+		select * from massage
+	</select>
+	
+	
+	<!-- insert 최초 입력시 읽지않음 = N 
+		 send_date = sysdate(시간까지 나오게...)
+	-->
+	<insert id="insertMassage" parameterClass="mgsvo">
+	insert into MASSAGE values
+	(#msg_no#, #send_id#, #reciv_id#, #msg_ttl#,#msg_cn#
+	,'N',TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'))
+	</insert>
+	
+	
+</sqlMap>

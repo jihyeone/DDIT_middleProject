@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="schedule">
+<!-- vo = scheudlevo  -->
+
+
+	<!--  select All  -->
+	<select id="getAllScheudle" resultClass="schedulevo">
+		select * from SCHEDULE
+	</select>
+	
+	<insert id="insertschedle" parameterClass="schedulevo">
+		insert into SCHEDULE(SCHEDULE_CODE, TITLE, START_DATE, END_DATE,ALLDAY, CLASS_NO)
+		values(schedule_code_seq.nextval, #title#,#start#,#end# , #allday# , #class_no#) 
+	</insert>
+	
+	
+<resultMap id="select.result" class="java.util.HashMap">
+    <result property="schedule_no" column="SCHEDULE_NO"/>
+    <result property="title" column="TITLE"/>
+    <result property="start" column="START_DATE"/>
+    <result property="end" column="END_DATE"/>
+    <result property="allday" column="ALLDAY"/>
+    <result property="class_no" column="CLASS_NO"/>
+    <result property="textColor" column="TEXTCOLOR"/>
+    <result property="backgroundColor" column="BACKGROUNDCOLOR"/>
+</resultMap>
+
+<!-- <select id="calenList" resultClass="java.util.HashMap" resultMap="select.result" remapResults="true"> -->
+<!--     select * from SCHEDULE where class_no = '2211' -->
+<!-- </select> -->
+
+<select id="calenAllList" resultClass="java.util.HashMap" resultMap="select.result" remapResults="true" parameterClass="String">
+	select * from SCHEDULE where class_no = #data#
+</select>
+	
+	
+	<select id="selectSubject" resultClass="schedulevo">
+		select TITLE from SCHEDULE
+	</select>
+	
+	
+	<!-- 스케줄 입력 -->
+	<insert id="insertsAddchedule" parameterClass="schedulevo">
+		insert into SCHEDULE
+		values(
+           		 (select Max(SCHEDULE_NO) + 1 from SCHEDULE),
+           		 #title#, #start#,#end#, 'true',#class_no# ,#textColor#, #backgroundColor#)
+           		 
+           <selectKey keyProperty="schedule_no" resultClass="int">
+           		select max(schedule_no) from SCHEDULE
+           </selectKey>
+	</insert>
+
+	
+	<!-- 스케줄 삭제 -->
+	<delete id="deleteSchedule" parameterClass="String">
+	  	delete from SCHEDULE where SCHEDULE_NO = #data#
+	</delete>
+</sqlMap>

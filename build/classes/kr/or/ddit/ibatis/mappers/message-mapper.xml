@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="message">
+<!-- vo = mgsvo  -->
+
+
+<!--  모든 쪽지  -->
+<select id="getAllMessage" resultClass="msgvo">
+	select * from message 
+</select>
+	
+	
+<!-- 쪽지 보내기 
+insert 최초 입력시 읽지않음 = N 
+send_date = sysdate(시간까지 나오게...)
+-->
+<insert id="insertMessage" parameterClass="msgvo">
+	insert into message values
+	(MSGNO_SEQ.nextval, #send_id#, #reciv_id#, #msg_ttl#,#msg_cn#,'N',TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') ,'N')
+</insert>
+	
+	
+<!-- 쪽지 읽음 확인 -->
+<update id="checkMessage" parameterClass="int">
+	update message set readyn = 'Y'	
+	where msg_no = #data#
+</update>
+
+
+<!-- 쪽지 선택(번호) -->
+<select id="selectMessageNo" resultClass="msgvo" parameterClass="int">
+	select * from message where MSG_NO=#data#
+</select>
+
+
+<!-- 쪽지 선택(아이디) -->
+<select id="selectMessageId" resultClass="msgvo" parameterClass="String">
+	select * from message where send_id=#data#
+</select>
+
+
+<!-- 쪽지 삭제 -->
+<update id="deleteMessage" parameterClass="int">
+	update message set msg_del ='Y'
+	where msg_no = #data#
+</update>
+
+
+<!-- 받은 쪽지 상세 보기 [쪽지 선택(번호)]로 이용하면 됨. 아이디로 받지 말고 no로 받아야함 
+<select id="receiveMessage" resultClass="msgvo" parameterClass="String">
+	select * from message where RECIV_ID=#data#
+</select>
+
+
+보낸 쪽지 상세 보기
+<select id="sendMessage" resultClass="msgvo" parameterClass="String">
+	select * from message where send_id=#data#
+</select>
+-->
+
+
+<!-- 받은 쪽지 목록 -->
+<!-- <select id="receiveMessageList" resultClass="msgvo" parameterClass="String"> -->
+<!-- 	select * from message where RECIV_ID=#data# -->
+<!-- </select> -->
+
+
+<select id="receiveMessageList" resultClass="msgvo" parameterClass="String">
+		select A.MSG_NO,
+		A.SEND_ID,
+		B.STU_NM AS SEND_NM,
+		A.MSG_TTL,
+		A.MSG_CN,
+		A.READYN,
+		A.SEND_DATE,
+		A.MSG_DEL
+		from MESSAGE A, STUDENT B
+		where A.SEND_ID=B.STU_ID AND RECIV_ID=#data#
+		order by SEND_DATE desc
+</select>
+
+
+
+
+<!-- 보낸 쪽지 목록 -->
+<!-- <select id="sendMessageList" resultClass="msgvo" parameterClass="String"> -->
+<!-- 	select * from message where send_id=#data# -->
+<!-- </select> -->
+
+
+<select id="sendMessageList" resultClass="msgvo" parameterClass="String">
+		select A.MSG_NO,
+		A.RECIV_ID,
+		B.STU_NM AS RECIV_NM,
+		A.MSG_TTL,
+		A.MSG_CN,
+		A.READYN,
+		A.SEND_DATE,
+		A.MSG_DEL
+		from MESSAGE A, STUDENT B
+		where A.RECIV_ID=B.STU_ID AND SEND_ID=#data#	
+		order by SEND_DATE desc
+</select>
+
+<!-- 받은 쪽지 목록중 읽지않은 제일 최신 1건 -->
+<select id="selectRecntMgs" parameterClass="String" resultClass="msgvo">
+	    select * from(
+        select A.MSG_NO,
+		A.SEND_ID,
+		B.STU_NM AS SEND_NM,
+		A.MSG_TTL,
+		A.MSG_CN,
+		A.READYN,
+		A.SEND_DATE,
+		A.MSG_DEL
+		from MESSAGE A, STUDENT B
+		where A.SEND_ID=B.STU_ID AND RECIV_ID=#data#
+		order by SEND_DATE desc )
+        where rownum = 1
+</select>
+	
+	<!-- 읽지않은 메세지 갯수 -->
+	<select id="countNewMsg" parameterClass="String" resultClass="int">
+		 select count(READYN) from MESSAGE
+         where RECIV_ID=#data# AND READYN='N'
+	</select>
+
+</sqlMap>

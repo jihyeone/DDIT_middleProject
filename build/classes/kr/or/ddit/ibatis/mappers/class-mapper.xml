@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE sqlMap
+		PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+		"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="class">
+<!-- vo = classvo  -->
+
+
+	<!--  select All  -->
+	<select id="getAllclass" resultClass="classvo">
+		 select * from class  order by CLASS_NO desc
+	</select>
+	
+	
+	<!-- 학급관리 -->
+	<select id="SelectJoinClass" parameterClass="String" resultClass="classvo">
+		SELECT 
+		A.CLASS_NO,A.TR_ID,A.S_DATE,A.E_DATE,B.TR_NM,
+		PRO_NM
+		FROM CLASS A,TRAINING B,PROFESSOR C
+		WHERE A.TR_ID = B.TR_ID
+		AND A.PRO_ID=C.PRO_ID
+		AND A.CLASS_NO=#CLASS_NO#
+	</select>
+	
+	
+</sqlMap>

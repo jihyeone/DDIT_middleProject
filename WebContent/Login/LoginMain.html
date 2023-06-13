@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>DDIT LoginPage</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../js/jquery-3.6.3.min.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <title>newLogin</title>
+    <link rel="stylesheet" href="../css/Loginstyle.css">
+
+</head>
+<body>
+        <div class="parent">
+        <div class="child left">
+            <img src="../images/it.jpg" class="imgcut">
+            <!-- <img src="../images/dditmain.png" id="benericon"> -->
+        </div>
+        <div class="child center" id="center">
+            <div id="main">
+                <div id="Loginform">
+                <h3>DDIT 포탈 서비스</h3>
+                <form>
+                <div class="form-group">
+                   <!-- <label>User Name</label> -->
+                   <input type="text" class="form-control" placeholder="User Name">
+                </div>
+                <div class="form-group">
+                   <!-- <label>Password</label> -->
+                   <input type="password" class="form-control" placeholder="Password">
+                </div>
+                <span class="check"><input type="radio" name="ddit" value="학생">학생</span>&nbsp;&nbsp;
+                <span class="check"><input type="radio" name="ddit" value="교직원">교직원</span>
+                <br><br>
+                <button type="submit" class="btn btn-black" id="loginbtn">Login</button><br>
+                <br>
+                <span class="find"><a href="l">아이디찾기</a></span>&nbsp;&nbsp;
+                <span class="find"><a href="#">비밀번호 찾기</a></span>
+             </form>
+            </div>
+            </div>
+        </div>
+        <div class="child right" id="right">
+            <img src="../images/dditmain.png" id="benericon">
+        </div>
+    </div>
+</body>
+</html>
